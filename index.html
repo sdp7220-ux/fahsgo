@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FahsGo · Prototype</title>
+<style>
+  :root{
+    --navy:#14213d; --teal:#0f766e; --teal-soft:#e6f4f2; --amber:#f2a93b;
+    --bg:#eef1f4; --card:#ffffff; --muted:#64748b; --line:#e2e8f0;
+    --green:#15803d; --green-soft:#dcfce7; --orange:#c2410c; --orange-soft:#ffedd5; --red:#b91c1c; --red-soft:#fee2e2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"SF Pro Text","Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--navy);
+       min-height:100vh;display:flex;align-items:center;justify-content:center;gap:40px;padding:24px}
+  .side{max-width:300px}
+  .side .k{color:var(--teal);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+  .side h1{font-size:34px;margin:6px 0 8px}
+  .side p{color:var(--muted);line-height:1.5;margin-bottom:16px}
+  .steps{list-style:none}
+  .steps li{display:flex;gap:10px;align-items:center;padding:8px 0;color:var(--muted);font-weight:600}
+  .steps li span{width:26px;height:26px;border-radius:50%;background:#dfe5ec;display:grid;place-items:center;font-size:13px}
+  .steps li.on{color:var(--navy)} .steps li.on span{background:var(--teal);color:#fff}
+  .note{font-size:12px;color:var(--muted);margin-top:18px;border-top:1px solid var(--line);padding-top:10px}
+
+  .phone{width:390px;height:800px;background:#0b1220;border-radius:52px;padding:12px;box-shadow:0 30px 60px rgba(20,33,61,.25);flex-shrink:0}
+  .screen{width:100%;height:100%;background:#f7f8fa;border-radius:42px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .status{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 28px;font-size:14px;font-weight:600}
+  .top{padding:6px 22px 14px;display:flex;align-items:center;gap:10px}
+  .logo{width:34px;height:34px;border-radius:10px;background:var(--teal);color:#fff;display:grid;place-items:center;font-weight:800}
+  .brand{font-weight:800;font-size:20px} .brand b{color:var(--teal)}
+  .back{margin-left:auto;font-size:14px;color:var(--teal);cursor:pointer;font-weight:600;background:none;border:none}
+  .view{display:none;flex:1;overflow-y:auto;padding:0 20px 20px;flex-direction:column}
+  .view.active{display:flex}
+  .stepk{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+  h2{font-size:24px;line-height:1.2;margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+  label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px}
+  select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:#fff;color:var(--navy);margin-bottom:10px;appearance:none}
+  .row{display:flex;gap:8px} .row > div{flex:1}
+  .map{height:120px;border-radius:12px;position:relative;overflow:hidden;
+       background:linear-gradient(90deg,transparent 48%,#fff 48%,#fff 52%,transparent 52%),linear-gradient(0deg,transparent 46%,#fff 46%,#fff 50%,transparent 50%),linear-gradient(35deg,#dbe7dd,#e8eef3)}
+  .pin{position:absolute;left:50%;top:44%;transform:translate(-50%,-100%);font-size:30px}
+  .addr{font-size:13px;margin-top:8px;font-weight:600}
+  .price{display:flex;justify-content:space-between;align-items:center;background:var(--navy);color:#fff;border-radius:16px;padding:14px 16px;margin-bottom:12px}
+  .price .amt{font-size:26px;font-weight:800} .price small{display:block;opacity:.75;font-size:12px}
+  .btn{margin-top:auto;width:100%;padding:16px;border:none;border-radius:14px;background:var(--teal);color:#fff;font-size:17px;font-weight:700;cursor:pointer}
+  .btn:active{transform:scale(.98)}
+  .opt{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;background:#fff}
+  .opt.sel{border-color:var(--teal);background:var(--teal-soft)}
+  .opt .r{width:20px;height:20px;border-radius:50%;border:2px solid #cbd5e1;flex-shrink:0}
+  .opt.sel .r{border:6px solid var(--teal)}
+  .opt b{display:block} .opt small{color:var(--muted)}
+  .slots{display:flex;gap:8px;flex-wrap:wrap;margin:-2px 0 10px}
+  .slot{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer}
+  .slot.sel{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .sum{font-size:14px} .sum div{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line)} .sum div:last-child{border:none;font-weight:800}
+  .ok{width:64px;height:64px;border-radius:50%;background:var(--green-soft);color:var(--green);display:grid;place-items:center;font-size:32px;margin:6px auto 10px}
+  .center{text-align:center}
+  .insp{display:flex;gap:12px;align-items:center}
+  .av{width:48px;height:48px;border-radius:50%;background:#cbd5e1;display:grid;place-items:center;font-weight:800;color:var(--navy)}
+  .eta{font-size:13px;color:var(--teal);font-weight:700}
+  .bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:10px 0 6px}
+  .bar i{display:block;height:100%;width:35%;background:var(--teal);border-radius:6px;transition:width 1.2s}
+  .tl{font-size:13px;color:var(--muted);display:flex;justify-content:space-between}
+  .verdict{border-radius:16px;padding:16px;margin-bottom:12px;background:var(--orange-soft);border:2px solid #fdba74}
+  .verdict .v{font-size:28px;font-weight:800;color:var(--orange)}
+  .verdict p{font-size:13px;margin-top:4px}
+  .vtabs{display:flex;gap:6px;margin-bottom:12px}
+  .vtabs span{flex:1;text-align:center;padding:7px 0;border-radius:10px;font-size:12px;font-weight:700;background:#fff;border:1px solid var(--line);color:var(--muted)}
+  .vtabs .g.on{background:var(--green-soft);color:var(--green);border-color:#86efac}
+  .vtabs .o.on{background:var(--orange-soft);color:var(--orange);border-color:#fdba74}
+  .vtabs .x.on{background:var(--red-soft);color:var(--red);border-color:#fca5a5}
+  .item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .item:last-child{border:none}
+  .tag{font-size:11px;font-weight:700;padding:4px 8px;border-radius:8px}
+  .tag.g{background:var(--green-soft);color:var(--green)} .tag.o{background:var(--orange-soft);color:var(--orange)} .tag.x{background:var(--red-soft);color:var(--red)}
+  .photos{display:flex;gap:8px;margin-top:4px}
+  .photos div{flex:1;height:56px;border-radius:10px;background:linear-gradient(135deg,#cbd5e1,#94a3b8);display:grid;place-items:center;font-size:20px}
+  .demo{font-size:11px;color:var(--muted);text-align:center;margin-top:8px}
+  .link{background:none;border:none;color:var(--teal);font-weight:700;font-size:14px;cursor:pointer;margin-top:10px}
+  @media (max-width:760px){ body{padding:0;gap:0} .side{display:none} .phone{width:100vw;height:100vh;border-radius:0;padding:0} .screen{border-radius:0} }
+</style>
+</head>
+<body>
+
+<div class="side">
+  <div class="k">ENGR 3021 · Prototype</div>
+  <h1>FahsGo</h1>
+  <p>Get a used car inspected before you buy it: a certified inspector at the car within 3 hours, at a fixed price.</p>
+  <ul class="steps" id="steps">
+    <li data-s="1"><span>1</span>Choose the car</li>
+    <li data-s="2"><span>2</span>Schedule and book</li>
+    <li data-s="3"><span>3</span>Inspector on the way</li>
+    <li data-s="4"><span>4</span>Report and verdict</li>
+  </ul>
+  <div class="note">Clickable prototype for a course project. Prices and times are planned values (assumed); the car, inspector and report are sample demo data.</div>
+</div>
+
+<div class="phone"><div class="screen">
+  <div class="status"><span>9:41</span><span>●●● ▮</span></div>
+  <div class="top">
+    <div class="logo">F</div><div class="brand">Fahs<b>Go</b></div>
+    <button class="back" id="back" onclick="go(cur-1)" style="visibility:hidden">‹ Back</button>
+  </div>
+
+  <!-- 1 CHOOSE -->
+  <section class="view" id="v1">
+    <div class="stepk">Step 1 · Choose</div>
+    <h2>Which car are you about to buy?</h2>
+    <div class="card">
+      <label>Make</label>
+      <select id="make"><option>Toyota</option><option>Hyundai</option><option>Nissan</option><option>Kia</option><option>Chevrolet</option></select>
+      <div class="row">
+        <div><label>Model</label><select id="model"><option>Camry</option><option>Corolla</option><option>Land Cruiser</option><option>Hilux</option></select></div>
+        <div><label>Year</label><select id="year"><option>2019</option><option>2020</option><option>2018</option><option>2021</option><option>2017</option></select></div>
+      </div>
+    </div>
+    <div class="card">
+      <label>Where is the car?</label>
+      <div class="map"><div class="pin">📍</div></div>
+      <div class="addr">Seller’s location · Madinah</div>
+    </div>
+    <div class="price"><div><small>Fixed price, shown before you book</small><div class="amt">SAR 350</div></div><div style="text-align:right;font-size:12px;opacity:.85">120-point check<br>photo report</div></div>
+    <button class="btn" onclick="go(2)">Continue</button>
+  </section>
+
+  <!-- 2 SCHEDULE -->
+  <section class="view" id="v2">
+    <div class="stepk">Step 2 · Schedule</div>
+    <h2>When should the inspector come?</h2>
+    <div class="opt sel" data-o="asap" onclick="pick(this)"><div class="r"></div><div><b>As soon as possible</b><small>Inspector at the car within 3 hours</small></div></div>
+    <div class="opt" data-o="later" onclick="pick(this)"><div class="r"></div><div><b>Pick a time today</b><small>Choose a slot that suits the seller</small></div></div>
+    <div class="slots" id="slots" style="display:none">
+      <span class="slot sel" onclick="slot(this)">4:00 pm</span><span class="slot" onclick="slot(this)">5:30 pm</span><span class="slot" onclick="slot(this)">7:00 pm</span><span class="slot" onclick="slot(this)">8:30 pm</span>
+    </div>
+    <div class="card sum" id="sum">
+      <div><span>Car</span><span id="carname">Toyota Camry 2019</span></div>
+      <div><span>Arrival</span><span id="arrive">Within 3 hours</span></div>
+      <div><span>Inspection</span><span>120-point check</span></div>
+      <div><span>Total (fixed)</span><span>SAR 350</span></div>
+    </div>
+    <button class="btn" onclick="go(3)">Book now</button>
+  </section>
+
+  <!-- 3 TRACK -->
+  <section class="view" id="v3">
+    <div class="ok">✓</div>
+    <div class="center"><div class="stepk">Step 3 · Booked</div><h2>Your inspector is on the way</h2></div>
+    <div class="card">
+      <div class="insp"><div class="av">AK</div><div><b>Inspector A. K.</b><div style="font-size:13px;color:var(--muted)">Certified · rated 4.8 / 5</div><div class="eta" id="eta">Arriving in about 45 minutes</div></div></div>
+      <div class="bar"><i id="prog"></i></div>
+      <div class="tl"><span>Booked</span><span>On the way</span><span>Inspecting</span><span>Report</span></div>
+    </div>
+    <div class="card" style="font-size:14px;line-height:1.5">
+      <b>What happens next</b><br>
+      The inspector checks the car on site. You get a photo report with a clear verdict about 60 minutes after the inspection starts.
+    </div>
+    <button class="btn" onclick="go(4)">View the report</button>
+    <div class="demo">Demo: skips ahead to the finished report</div>
+  </section>
+
+  <!-- 4 REPORT -->
+  <section class="view" id="v4">
+    <div class="stepk">Step 4 · Report</div>
+    <h2 id="rtitle">Toyota Camry 2019</h2>
+    <div class="vtabs"><span class="g">✅ Buy</span><span class="o on">⚠️ Negotiate</span><span class="x">❌ Avoid</span></div>
+    <div class="verdict">
+      <div class="v">Negotiate</div>
+      <p>The car is sound overall, but 2 issues need repair. Use the estimated repair cost to negotiate the price.</p>
+    </div>
+    <div class="card">
+      <div class="item"><span>Engine</span><span class="tag g">Good</span></div>
+      <div class="item"><span>Transmission</span><span class="tag g">Good</span></div>
+      <div class="item"><span>Brakes</span><span class="tag o">Needs repair</span></div>
+      <div class="item"><span>Body and paint</span><span class="tag o">Repainted panel</span></div>
+      <div class="item"><span>Electrical</span><span class="tag g">Good</span></div>
+      <div class="item"><span>Accident signs</span><span class="tag g">None found</span></div>
+    </div>
+    <div class="card"><b style="font-size:14px">Photos (32)</b><div class="photos"><div>🚗</div><div>🛞</div><div>⚙️</div><div>🔧</div></div></div>
+    <div class="demo">Sample report with demo data · 120-point checklist</div>
+    <button class="link" onclick="go(1)">↺ Start a new inspection</button>
+  </section>
+</div></div>
+
+<script>
+  let cur = 1;
+  function go(n){
+    if(n<1) n=1;
+    cur = n;
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('v'+n).classList.add('active');
+    document.getElementById('back').style.visibility = (n>1 && n<4) ? 'visible' : 'hidden';
+    document.querySelectorAll('#steps li').forEach(li=>li.classList.toggle('on', +li.dataset.s<=n));
+    const car = make.value+' '+model.value+' '+year.value;
+    carname.textContent = car; rtitle.textContent = car;
+    if(n===3){ prog.style.width='15%'; setTimeout(()=>prog.style.width='38%',80); }
+    history.replaceState(null,'','#'+n);
+  }
+  function pick(el){
+    document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+    const later = el.dataset.o==='later';
+    slots.style.display = later ? 'flex' : 'none';
+    arrive.textContent = later ? 'Today, '+document.querySelector('.slot.sel').textContent : 'Within 3 hours';
+  }
+  function slot(el){
+    document.querySelectorAll('.slot').forEach(s=>s.classList.remove('sel'));
+    el.classList.add('sel');
+    arrive.textContent = 'Today, '+el.textContent;
+  }
+  go(+(location.hash||'#1').slice(1) || 1);
+</script>
+</body>
+</html>
